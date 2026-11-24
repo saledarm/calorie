@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#161c18">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Счётчик калорий</title>
+<style>
+:root{--bg:#e9ede7;--sf:#f7f8f4;--ln:#d3d9cf;--tx:#1b2420;--mu:#5d695f;--ac:#0f7a5c;--onac:#fff;--lcd:#161c18;--dg:#c8f169;--bad:#f0906e;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101512;--sf:#1a211d;--ln:#2a342d;--tx:#e6eee7;--mu:#93a096;--ac:#4fd1a1;--onac:#07130d;--lcd:#070a08;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#101512;--sf:#1a211d;--ln:#2a342d;--tx:#e6eee7;--mu:#93a096;--ac:#4fd1a1;--onac:#07130d;--lcd:#070a08;color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html,body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button,input{font:inherit;color:inherit}
+button{border:0;background:none;cursor:pointer;min-height:44px}
+:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.app{max-width:520px;margin:0 auto;padding:12px 14px 40px}
+.day{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.day button{width:44px;font-size:26px}
+.day div{text-align:center}
+.day b{display:block}
+.day small{display:block;min-height:18px;color:var(--mu)}
+.lcd{background:var(--lcd);color:#e8efe9;border-radius:18px;padding:18px 18px 16px}
+.lab{color:#9fb0a5;font-size:14px}
+.big{font:700 64px/1.05 ui-monospace,"SF Mono",Menlo,Consolas,monospace;color:var(--dg);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.big i{font:500 18px system-ui,sans-serif;color:#9fb0a5;margin-left:8px;letter-spacing:0}
+.over .big{color:var(--bad)}
+.track{height:6px;border-radius:3px;background:#ffffff22;margin:12px 0 8px;overflow:hidden}
+#bar{height:100%;background:var(--dg);border-radius:3px;transition:width .3s}
+.over #bar{background:var(--bad)}
+.eat{font-size:14px;color:#c4d0c8}
+.mac{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid #ffffff22}
+.mac b{display:block;font-size:20px;color:#fff}
+.mac span{font-size:13px;color:#9fb0a5}
+.set{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0 0}
+.set label{display:block;font-size:13px;color:var(--mu);margin-bottom:4px}
+input{width:100%;background:var(--sf);border:1px solid var(--ln);border-radius:12px;padding:11px 12px;min-height:44px}
+h2{font-size:18px;margin:24px 0 10px}
+.res button{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;text-align:left;background:var(--sf);border:1px solid var(--ln);border-radius:12px;padding:8px 12px;margin-top:6px}
+.res small,.mt{color:var(--mu);font-size:13px}
+.pk{background:var(--sf);border:1px solid var(--ln);border-radius:14px;padding:14px;margin-top:10px}
+.pk[hidden]{display:none}
+.gl{display:flex;align-items:center;gap:8px;background:var(--lcd);border-radius:12px;padding:6px 14px;margin:10px 0}
+.gl input{background:none;border:0;color:var(--dg);font:700 34px ui-monospace,Menlo,Consolas,monospace;text-align:right;padding:0}
+.gl span{color:#9fb0a5}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button,.seg button{min-height:40px;padding:0 12px;border-radius:10px;border:1px solid var(--ln);background:var(--bg)}
+.seg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:12px 0}
+.seg button{padding:0 4px;font-size:14px}
+.seg .on{background:var(--ac);color:var(--onac);border-color:var(--ac)}
+.pv{margin:10px 0 0;font-weight:600}
+.go{width:100%;background:var(--ac);color:var(--onac);border-radius:12px;font-weight:700;margin-top:8px}
+details{margin-top:12px}
+summary{cursor:pointer;color:var(--ac);min-height:44px;display:flex;align-items:center}
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cg input:first-child{grid-column:1/-1}
+.meal{background:var(--sf);border:1px solid var(--ln);border-radius:14px;padding:4px 14px;margin-bottom:10px}
+.mh{display:flex;justify-content:space-between;padding:10px 0 4px;color:var(--mu)}
+.mh b{color:var(--tx)}
+.it{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--ln)}
+.it>div{flex:1;min-width:0}
+.nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.it button{width:40px;color:var(--mu)}
+.empty{color:var(--mu);text-align:center;padding:20px 10px;border:1px dashed var(--ln);border-radius:14px;margin-top:6px}
+.note{color:var(--mu);font-size:13px;margin-top:18px}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--lcd);color:var(--dg);padding:10px 16px;border-radius:10px;font-size:14px;display:none;z-index:5}
+@media (prefers-reduced-motion:reduce){#bar{transition:none}}
+</style>
+</head>
+<body>
+<main class="app">
+  <header class="day">
+    <button id="prev" aria-label="Предыдущий день">‹</button>
+    <div><b id="dt"></b><small id="ds"></small></div>
+    <button id="next" aria-label="Следующий день">›</button>
+  </header>
+
+  <section class="lcd" id="lcd" aria-live="polite">
+    <div class="lab" id="remL">Осталось</div>
+    <div class="big"><span id="rem">0</span><i>ккал</i></div>
+    <div class="track"><div id="bar"></div></div>
+    <div class="eat" id="eat"></div>
+    <div class="mac">
+      <div><b id="mp">0</b><span>Белки, г</span></div>
+      <div><b id="mf">0</b><span>Жиры, г</span></div>
+      <div><b id="mc">0</b><span>Углеводы, г</span></div>
+    </div>
+  </section>
+
+  <section class="set">
+    <div><label for="goal">Норма на день, ккал</label><input id="goal" type="number" inputmode="numeric" min="0"></div>
+    <div><label for="act">Активность за день, ккал</label><input id="act" type="number" inputmode="numeric" min="0" placeholder="0"></div>
+  </section>
+
+  <h2>Добавить продукт</h2>
+  <input id="q" type="search" placeholder="Например: гречка, яйцо, творог" aria-label="Поиск продукта" autocomplete="off">
+  <div class="res" id="res"></div>
+
+  <div class="pk" id="pk" hidden>
+    <b id="pn"></b>
+    <div class="mt" id="pi"></div>
+    <div class="gl"><input id="g" type="number" inputmode="decimal" step="any" min="0" aria-label="Вес в граммах"><span>г</span></div>
+    <div class="chips" id="chips"></div>
+    <div class="seg" id="seg"></div>
+    <div class="pv" id="pv"></div>
+    <button class="go" id="go">Добавить в дневник</button>
+  </div>
+
+  <details id="cd">
+    <summary>Нет продукта в списке? Добавьте свой</summary>
+    <div class="cg">
+      <input id="cn" placeholder="Название" aria-label="Название">
+      <input id="ck" type="number" inputmode="decimal" placeholder="Ккал на 100 г" aria-label="Ккал на 100 г">
+      <input id="cp" type="number" inputmode="decimal" placeholder="Белки, г" aria-label="Белки на 100 г">
+      <input id="cf" type="number" inputmode="decimal" placeholder="Жиры, г" aria-label="Жиры на 100 г">
+      <input id="cc" type="number" inputmode="decimal" placeholder="Углеводы, г" aria-label="Углеводы на 100 г">
+    </div>
+    <button class="go" id="cs">Сохранить продукт</button>
+  </details>
+
+  <h2>Дневник</h2>
+  <div id="diary"></div>
+  <p class="note">Значения указаны на 100 г продукта и ориентировочные. У готовых блюд и фирменных продуктов они могут отличаться, ориентируйтесь на упаковку. Записи хранятся в браузере на этом устройстве.</p>
+</main>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const R=n=>Math.round(n);
+const MEALS=['Завтрак','Обед','Ужин','Перекус'];
+// название | ккал | белки | жиры | углеводы | вес штуки, г (на 100 г)
+const DB=`Хлеб белый пшеничный|266|8.1|3|48.8
+Хлеб ржаной|214|6.6|1.2|40.9
+Батон нарезной|264|7.5|2.9|51.4
+Гречка варёная|110|4.2|1.1|21.3
+Гречка сухая|313|12.6|3.3|62.1
+Рис варёный|130|2.7|0.3|28.2
+Рис сухой|344|6.7|0.7|78.9
+Макароны варёные|131|5|1.1|25
+Макароны сухие|344|10.4|1.1|71.5
+Овсяные хлопья сухие|352|12.3|6.2|61.8
+Овсянка на воде|88|3|1.7|15
+Картофель варёный|82|2|0.4|16.7
+Картофель жареный|192|2.8|9.5|23.4
+Куриная грудка сырая|113|23.6|1.9|0.4
+Куриная грудка варёная|137|29.8|1.8|0.5
+Говядина варёная|254|25.8|16.8|0
+Фарш говяжий сырой|254|17.2|20|0
+Свинина средней жирности|259|16|21.6|0
+Колбаса варёная докторская|257|13.7|22.8|1.5
+Сосиски молочные|266|11|24|1.6|50
+Яйцо куриное|157|12.7|11.5|0.7|55
+Лосось|208|20.4|13.4|0
+Треска|82|17.7|0.7|0
+Тунец в собственном соку|96|21|1|0
+Молоко 2,5%|52|2.8|2.5|4.8
+Кефир 1%|40|3|1|4
+Творог 5%|121|17.2|5|1.8
+Творог 9%|159|16.7|9|2
+Йогурт натуральный|60|4.3|1.5|6.2
+Сметана 20%|206|2.8|20|3.2
+Сыр твёрдый|364|24|29|0
+Масло сливочное|748|0.5|82.5|0.8
+Масло подсолнечное|899|0|99.9|0
+Яблоко|52|0.3|0.2|13.8|180
+Банан|96|1.5|0.2|21.8|120
+Апельсин|43|0.9|0.2|8.1|150
+Виноград|65|0.6|0.2|16.8
+Огурец|15|0.8|0.1|2.8|100
+Помидор|20|1.1|0.2|3.7|110
+Морковь|32|1.3|0.1|6.9|80
+Капуста белокочанная|28|1.8|0.1|4.7
+Лук репчатый|41|1.4|0|10.4
+Брокколи|34|2.8|0.4|6.6
+Грецкий орех|654|15.2|65.2|7
+Арахис|612|26.3|45.2|9.7
+Миндаль|609|18.6|53.7|13
+Шоколад молочный|534|6.9|30.7|56.9
+Печенье овсяное|437|6.5|14.4|71.8
+Сахар|399|0|0|99.8
+Мёд|329|0.8|0|81.5
+Пельмени|275|11.9|12.4|29
+Пицца|266|11|10|33
+Борщ|49|1.1|2.5|5.4
+Майонез|627|2.4|67|3.9
+Кетчуп|93|1.8|1|22.2
+Сок апельсиновый|45|0.7|0.2|10.4
+Кола|42|0|0|10.6
+Пиво|43|0.5|0|3.6
+Кофе чёрный без сахара|2|0.2|0|0
+Чай без сахара|0|0|0|0`.split('\n').map(l=>{const a=l.split('|');return{n:a[0],k:+a[1],p:+a[2],f:+a[3],c:+a[4],pc:+a[5]||0}});
+
+let S={goal:2000,days:{},custom:[]};
+try{const j=JSON.parse(localStorage.getItem('kcal-v1'));if(j&&j.days)S=Object.assign(S,j)}catch(e){}
+const save=()=>{try{localStorage.setItem('kcal-v1',JSON.stringify(S))}catch(e){}};
+const hr=new Date().getHours();
+let off=0,sel=null,cur=[],meal=hr<11?'Завтрак':hr<16?'Обед':hr<21?'Ужин':'Перекус';
+
+const dateOf=()=>{const d=new Date();d.setDate(d.getDate()+off);return d};
+const key=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const day=()=>{const k=key(dateOf());return S.days[k]||(S.days[k]={act:0,items:[]})};
+function toast(t){const e=$('toast');e.textContent=t;e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',1800)}
+
+function render(){
+ const d=day(),t={k:0,p:0,f:0,c:0};
+ d.items.forEach(i=>{t.k+=i.k;t.p+=i.p;t.f+=i.f;t.c+=i.c});
+ const lim=S.goal+(d.act||0),rem=lim-t.k;
+ $('rem').textContent=R(Math.abs(rem));
+ $('remL').textContent=rem>=0?'Осталось':'Сверх нормы';
+ $('lcd').classList.toggle('over',rem<0);
+ $('bar').style.width=Math.min(100,lim>0?t.k/lim*100:0)+'%';
+ $('eat').textContent='Съедено '+R(t.k)+' из '+R(lim)+' ккал';
+ $('mp').textContent=R(t.p);$('mf').textContent=R(t.f);$('mc').textContent=R(t.c);
+ $('goal').value=S.goal;$('act').value=d.act||'';
+ const s=dateOf().toLocaleDateString('ru-RU',{weekday:'long',day:'numeric',month:'long'});
+ $('dt').textContent=s[0].toUpperCase()+s.slice(1);
+ $('ds').textContent=off===0?'Сегодня':off===-1?'Вчера':off===1?'Завтра':'';
+ $('diary').innerHTML=MEALS.map(m=>{
+  const it=d.items.filter(i=>i.meal===m);if(!it.length)return'';
+  return `<div class="meal"><div class="mh"><b>${m}</b><span>${R(it.reduce((a,i)=>a+i.k,0))} ккал</span></div>`+
+   it.map(i=>`<div class="it"><div><div class="nm">${esc(i.n)}</div><div class="mt">${R(i.g)} г · Б ${R(i.p)} Ж ${R(i.f)} У ${R(i.c)}</div></div><b>${R(i.k)}</b><button data-x="${i.id}" aria-label="Удалить ${esc(i.n)}">✕</button></div>`).join('')+'</div>';
+ }).join('')||'<div class="empty">В этот день ничего не добавлено. Найдите продукт выше и введите вес в граммах.</div>';
+}
+
+const nz=s=>s.toLowerCase().replace(/ё/g,'е');
+function search(){
+ const q=nz($('q').value.trim());
+ if(!q){$('res').innerHTML='';return}
+ cur=[...S.custom,...DB].filter(x=>nz(x.n).includes(q)).slice(0,8);
+ $('res').innerHTML=cur.length?cur.map((x,i)=>`<button data-i="${i}"><span>${esc(x.n)}</span><small>${R(x.k)} ккал</small></button>`).join(''):'<div class="empty">Не найдено. Добавьте свой продукт ниже.</div>';
+}
+function upd(){
+ if(!sel)return;const m=(+$('g').value||0)/100;
+ $('pv').textContent=R(sel.k*m)+' ккал · Б '+R(sel.p*m)+' Ж '+R(sel.f*m)+' У '+R(sel.c*m);
+}
+function pick(p){
+ sel=p;$('pk').hidden=false;$('pn').textContent=p.n;
+ $('pi').textContent='На 100 г: '+R(p.k)+' ккал · Б '+p.p+' Ж '+p.f+' У '+p.c;
+ $('chips').innerHTML=[50,100,150,200].map(v=>`<button data-g="${v}">${v} г</button>`).join('')+(p.pc?`<button data-g="${p.pc}">1 шт · ${p.pc} г</button>`:'');
+ $('g').value=p.pc||100;upd();$('g').focus();$('g').select();
+}
+function segs(){$('seg').innerHTML=MEALS.map(m=>`<button data-m="${m}" class="${m===meal?'on':''}">${m}</button>`).join('')}
+
+$('prev').onclick=()=>{off--;render()};
+$('next').onclick=()=>{off++;render()};
+$('goal').onchange=e=>{S.goal=Math.max(0,+e.target.value||0);save();render()};
+$('act').onchange=e=>{day().act=Math.max(0,+e.target.value||0);save();render()};
+$('q').oninput=search;
+$('res').onclick=e=>{const b=e.target.closest('[data-i]');if(b)pick(cur[+b.dataset.i])};
+$('chips').onclick=e=>{const b=e.target.closest('[data-g]');if(b){$('g').value=b.dataset.g;upd()}};
+$('g').oninput=upd;
+$('seg').onclick=e=>{const b=e.target.closest('[data-m]');if(b){meal=b.dataset.m;segs()}};
+$('go').onclick=()=>{
+ const g=+$('g').value;if(!sel||!(g>0))return toast('Введите вес в граммах');
+ const m=g/100;
+ day().items.push({id:Date.now()+Math.random(),n:sel.n,g,k:sel.k*m,p:sel.p*m,f:sel.f*m,c:sel.c*m,meal});
+ save();sel=null;$('pk').hidden=true;$('q').value='';search();render();toast('Добавлено в дневник');
+};
+$('cs').onclick=()=>{
+ const n=$('cn').value.trim(),k=parseFloat($('ck').value);
+ if(!n||!(k>=0))return toast('Укажите название и калории на 100 г');
+ const x={n,k,p:+$('cp').value||0,f:+$('cf').value||0,c:+$('cc').value||0,pc:0};
+ S.custom.unshift(x);save();['cn','ck','cp','cf','cc'].forEach(i=>$(i).value='');$('cd').open=false;pick(x);
+};
+$('diary').onclick=e=>{
+ const b=e.target.closest('[data-x]');if(!b)return;
+ const d=day();d.items=d.items.filter(i=>String(i.id)!==b.dataset.x);save();render();
+};
+segs();render();
+</script>
+<script>
+if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})})}
+</script>
+</body>
+</html>
